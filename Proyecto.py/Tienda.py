@@ -1,5 +1,6 @@
 #Se importan todos los datos usados
-
+import json
+import requests
 from Productos import Producto
 from Ventas import Venta
 from Clientes import Cliente
@@ -132,6 +133,31 @@ class Tienda:
                 if sección == 1:
             # Sección donde podras registrar a los clientes
                     print("----- Bienvenido al registro de clientes -----")
+                       print("----- Bienvenido al registro de clientes -----")
+                    while True:
+                        selección= int(input(f"""Indique un numero: 
+                                        1. Cliente Natural
+                                        2. Cliente Juridico"""))
+                        if selección != int or selección not in range(1,3):
+                            print("Seleccion invalida")
+                        if selección == 1:
+                            self.nombreombre = input("Cual es tu nombre: ")
+                            self.apellido = input("Cual es tu apellido: ")
+                            self.cedula = int(input("Indique su cedula: "))
+                            self.correo = input("Cual es tu correo?: ")
+                            self.telefono = int(input("Indique su numero telefonico"))
+                            
+                            if self.cedula and self.telefono != int or self.telefono and self.cedula != 8:
+                                print("Seleccion invalida")
+                        
+                        if selección ==2:
+                            self.nombre_juridico = input("Nombre: ")
+                            self.rif = int(input("Rif: "))
+                            self.telefono = int(input("Telefono: "))
+                            self.correo = input("Correo: ")
+                            
+                            if self.rif and self.telefono != int or self.telefono and self.rif != 8:
+                                print("Selección invalida")
                 elif sección == 2:
             # Sección donde podras registar la información del cliente
                     print("----- Bienvenido a la Modificación Información del cliente -----")
