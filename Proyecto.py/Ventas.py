@@ -1,7 +1,16 @@
 #Constructor, metodos y atributo de la clase Ventas
 
+from dataclasses import dataclass
+@dataclass
 class Venta:
     #Constructor de la clase Venta
+    
+    compra: str
+    productos: str
+    cantidad: int
+    pago: float
+    envio: str
+    
     def __init__(self, compra, productos, cantidad, pago, envio, ):
         self.compra = compra
         self.productos = productos
@@ -17,10 +26,16 @@ class Venta:
               Pago = {self.pago}
               Envio = {self.envio}
               """)
-    
+@dataclass
 class Total(Venta):
-    def __init__(self, compra, productos, cantidad, pago, envio, Iva, subtotal, IGTF):
+    #Constructor de la clase Total, clase hija de venta
+    iva: float
+    subtotal: float
+    IGTF: float
+
+    def __init__(self, compra, productos, cantidad, pago, envio, iva, subtotal, IGTF):
         super().__init__(compra, productos, cantidad, pago, envio)
-        self.Iva = 0.16
+        self.iva = 0.16
         self.subtotal = subtotal
         self.IGTF = 0.03
+        
