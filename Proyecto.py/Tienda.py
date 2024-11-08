@@ -49,18 +49,37 @@ class Tienda:
                 telefono = juridico.get("telefono")
                 correo_juridico = juridico.get("correo_juridico")
                 nuevo_juridico = Juridico(nombre_juridico, rif, correo_juridico, nuevo_juridico)
+                self.juridicos.append(nombre_juridico)
                 
-            for j in y["Pagos"]:
-                pago_cliente = j.get("pago_cliente")
-                monto = j.get("monto")
-                moneda = j.get("moneda")
-                tipo_de_pago = j.get("tipo_de_pago")
-                fecha = j.get("fecha")
+            for pago in y["Pagos"]:
+                pago_cliente = pago.get("pago_cliente")
+                monto = pago.get("monto")
+                moneda = pago.get("moneda")
+                tipo_de_pago = pago.get("tipo_de_pago")
+                fecha = pago.get("fecha")
                 nuevo_pago = Pagos(pago_cliente, monto, moneda, tipo_de_pago, fecha)
                 self.payments.append(nuevo_pago)
+
+            for producto in y["Productos"]:
+                nombre = producto.get("nombre")
+                descripción = producto.get("descripción")
+                precio = producto.get("precio")
+                categoria = producto.get("categoria")
+                inventario = producto.get("inventario")
+                vehiculo_compatible = producto.get("vehiculo_compatible")
+                nuevo_producto = Producto(nombre,descripción, precio, categoria, inventario, vehiculo_compatible)
+                self.products.append(nuevo_producto)
             
-            
-            
+            for envio in y["Envio"]:
+                 cliente = envio.get("cliente")
+                 fecha_de_entrega = envio.get("fecha_de_entrega")
+                 orden_compra = envio.get("orden_compra")
+                 servicio_envio = envio.get("servicio_envio")
+                 costo = envio.get("costo")
+
+                 nuevo_envio = Envio(cliente, fecha_de_entrega, orden_compra, servicio_envio, costo)
+                 self.Envios.append(nuevo_envio)
+                    
     def entrada_menu(self, mensaje, rango_maximo): #Menu otorgado por un try y que controla todo el codigo, aplicando polimorfismo
         try:
             num = int(input(mensaje))
@@ -108,8 +127,7 @@ class Tienda:
                             "Indicadores de Gestion": self.indicadores_gestion,
                             "Juridico" : self.juridicos
                             }
-                        file.write(json.dumps(diccionario, indent = 4, cls=EnhancedJSONEncoder))
-                        
+                        file.write(json.dumps(diccionario, indent = 4, cls=EnhancedJSONEncoder)) 
                     break
             else:
                 print("Selección Invalida")   
@@ -150,6 +168,7 @@ class Tienda:
                                                                 3. Nombre
                                                                 4. Disponibilidad de inventario
                                                                 5. Volver a inicio: """,6) #Busca el usuario catalogando segun la cedula, rif y correo electronico
+                        
                         if sección != None: 
                             if sección == 1:
                                 for category in self.products:
@@ -408,9 +427,7 @@ class Tienda:
                           
                                 new_company = Juridico(nombre_juridico, rif, telefono, correo_juridico)
                                 self.juridicos.append(new_company)
-                                
-                                
-                                        
+                                      
                             elif sección == 3:
                                 break
                         else:
@@ -662,6 +679,8 @@ class Tienda:
                 if sección == 1:
                      # Lugar donde podras consultar los registros de envios
                     print("----- Bienvenido al registro de envios -----")
+                    cliente = input("Ingrese su nombre: ")
+                    fecha_de_entrega = input("Ingrese la fecha de entrega(aaaa/mm/dd): ")
                     orden_compra = int(input("Cual es el ID orden de compra: "))
                     servicio_envio = input("Cual es el servicio de envio (Delivery o Zoom): ").lower()
                     costo = float(input("Introduzca el costo del envio: "))
@@ -677,8 +696,7 @@ class Tienda:
                         self.repartidor.append(new_repartidor)
                     else: 
                         print("Selección invalida")
-                        
-                                               
+                                        
                 elif sección == 2:
                      # Sitio donde podras buscar los envios
                     print("----- Bienvenido a la busqueda de envios -----")
@@ -687,11 +705,22 @@ class Tienda:
                                                   2. Fecha
                                                   3. Salir""",4)
                     if sección == None:
-                    
                         if sección == 1:
-                            pass
+                            cliente = input("Ingrese su nombre: ")
+                            for client in self.Envios:
+                                    if client.cliente == cliente:
+                                        print(f"Se ha encontrado el cliente de nombre {self.cliente}")
+                                        break
+                                    else:
+                                        print(f"No se ha encontrado el cliente de nombre {self.cliente} ")
                         elif sección == 2: 
-                            pass
+                            fecha_de_entrega = input("Ingrese la fecha de entrega: ")
+                            for fecha in self.Envios:
+                                if fecha.fecha_entrega == fecha_de_entrega:
+                                    print(f"La fecha del envio: {self.fecha_entrega}")
+                                    break
+                                else:
+                                    print(f"No se ha encontrado el cliente de nombre {self.fecha_entrega}")  
                         elif sección == 3:
                             break
                     else:
@@ -729,7 +758,3 @@ class Tienda:
                     break
             else:
                 print("Selección Invalida")
-                
-    def show_attr(self):
-        pass
-    
