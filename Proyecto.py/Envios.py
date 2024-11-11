@@ -1,15 +1,19 @@
 #Constructor, metodos y atributos de la clase Envio
 from dataclasses import dataclass
 @dataclass
-class Envio:
+class Envios:
     #Constructor de la clase Envio
     
+    cliente: str
+    cedula: int
     orden: str
     envio: str
     datos: str
     costo: float
     
-    def __init__(self, orden_compra, servicio_envio, datos_repartidor, costo):
+    def __init__(self, cliente, cedula, orden_compra, servicio_envio, datos_repartidor, costo):
+        self.cliente = cliente
+        self.cedula = cedula
         self.orden = orden_compra
         self.envio = servicio_envio
         self.datos = datos_repartidor
@@ -17,11 +21,14 @@ class Envio:
         
     def show(self):
         print(f"""
+              Cliente = {self.cliente}
+              Cedula = {self.cedula}
               Orden de Compra = {self.orden}
               Servicio de envio = {self.envio}
               Datos del repartidor = {self.datos}
               Costo del Servicio = {self.costo}
               """)
+        
 @dataclass
 class Repartidor:
     nombre: str
@@ -43,5 +50,4 @@ class Repartidor:
               Edad = {self.edad}""")
     
     
-        
 
