@@ -3,23 +3,26 @@ from Productos import Producto
 from Ventas import Venta
 from Clientes import Cliente
 from Pagos import Pagos
-from Envios import Envio
+from Envios import Envios
 from Envios import Repartidor
 from Indicadores_de_gestion import Indicadores_de_gestion
 from Clientes import Juridico
-
-import math
+import urllib.request
 import dataclasses
 import json
+import os.path
+path = './Salir.txt'
 
-Url = "https://raw.githubusercontent.com/Algoritmos-y-Programacion/api-proyecto/main/products.json"
+check_file = os.path.isfile(path)
+
+print(check_file)
 
 class EnhancedJSONEncoder(json.JSONEncoder):
         def default(self, o):
             if dataclasses.is_dataclass(o):
                 return dataclasses.asdict(o)
             return super().default(o)
-
+        
 class Tienda:
     #Lista para almacenar las Apis
     def __init__(self):
@@ -31,55 +34,98 @@ class Tienda:
         self.clients = []
         self.juridicos = []
         self.repartidor = []
-        with open("Salir.txt","r", encoding = "utf8") as file:
-            x = file.read()
-            y = json.loads(x)
-            for cliente in y["Clientes"]:
-                nombre = cliente.get("nombre")
-                apellido = cliente.get("apellido")
-                cedula = cliente.get("cedula")
-                correo = cliente.get("correo")
-                telefono = cliente.get("telefono")
-                nuevo_cliente = Cliente(nombre, apellido, cedula, correo, telefono)
-                self.clients.append(nuevo_cliente)
-                
-            for juridico in y["Juridico"]:
-                nombre_juridico = juridico.get("nombre_juridico")
-                rif = juridico.get("rif")
-                telefono = juridico.get("telefono")
-                correo_juridico = juridico.get("correo_juridico")
-                nuevo_juridico = Juridico(nombre_juridico, rif, correo_juridico, nuevo_juridico)
-                self.juridicos.append(nombre_juridico)
-                
-            for pago in y["Pagos"]:
-                pago_cliente = pago.get("pago_cliente")
-                monto = pago.get("monto")
-                moneda = pago.get("moneda")
-                tipo_de_pago = pago.get("tipo_de_pago")
-                fecha = pago.get("fecha")
-                nuevo_pago = Pagos(pago_cliente, monto, moneda, tipo_de_pago, fecha)
-                self.payments.append(nuevo_pago)
-
-            for producto in y["Productos"]:
-                nombre = producto.get("nombre")
-                descripción = producto.get("descripción")
-                precio = producto.get("precio")
-                categoria = producto.get("categoria")
-                inventario = producto.get("inventario")
-                vehiculo_compatible = producto.get("vehiculo_compatible")
-                nuevo_producto = Producto(nombre,descripción, precio, categoria, inventario, vehiculo_compatible)
-                self.products.append(nuevo_producto)
-            
-            for envio in y["Envio"]:
-                 cliente = envio.get("cliente")
-                 fecha_de_entrega = envio.get("fecha_de_entrega")
-                 orden_compra = envio.get("orden_compra")
-                 servicio_envio = envio.get("servicio_envio")
-                 costo = envio.get("costo")
-
-                 nuevo_envio = Envio(cliente, fecha_de_entrega, orden_compra, servicio_envio, costo)
-                 self.Envios.append(nuevo_envio)
+        
+        if check_file != True:
+            url = "https://raw.githubusercontent.com/Algoritmos-y-Programacion/api-proyecto/main/products.json"
+            with urllib.request.urlopen(url) as response:
+                if response.status == 200:
+                    data = response.read()  # Lee los datos
+                    json_data = json.loads(data)  # Lo convierte a diccionario
+                    for data in json_data:
+                        print(data)
+                        name = data.get("name")
+                        id = data.get("id")
+                        description = data.get("description")
+                        price = data.get("price")
+                        category = data.get("category")
+                        inventory = data.get("inventory")
+                        compatible_vehicles = data.get("compatible_vehicles")
+                        new_data = Producto(name, id, description, price, category, inventory, compatible_vehicles)
+                        self.products.append(new_data)
+                else:
+                    print(f"Error: {response.status}")
+        
+        else: 
+            with open("Salir.txt","r", encoding = "utf8") as file:
+                x = file.read()
+                y = json.loads(x)
+                                  
+                for cliente in y["Clientes"]:
+                    nombre = cliente.get("nombre")
+                    apellido = cliente.get("apellido")
+                    cedula = cliente.get("cedula")
+                    correo = cliente.get("correo")
+                    telefono = cliente.get("telefono")
+                    nuevo_cliente = Cliente(nombre, apellido, cedula, correo, telefono)
+                    self.clients.append(nuevo_cliente)
                     
+                for juridico in y["Juridico"]:
+                    nombre_juridico = juridico.get("nombre_juridico")
+                    rif = juridico.get("rif")
+                    telefono = juridico.get("telefono")
+                    correo_juridico = juridico.get("correo_juridico")
+                    nuevo_juridico = Juridico(nombre_juridico, rif, correo_juridico, nuevo_juridico)
+                    
+                for pago in y["Pagos"]:
+                    cliente = pago.get("cliente")
+                    cedula = pago.get("cedula")
+                    monto_pago = pago.get("monto_pago")
+                    moneda = pago.get("moneda_pago")
+                    tipo_de_pago = pago.get("tipo_de_pago")
+                    fecha = pago.get("fecha")
+                    nuevo_pago = Pagos(cliente, cedula, monto_pago, moneda, tipo_de_pago, fecha)
+                    self.payments.append(nuevo_pago)
+                
+                
+                for producto in y["Productos"]:
+                    nombre = producto.get("nombre")
+                    id = producto.get("id")
+                    descripción = producto.get("descripción")
+                    precio = producto.get("precio")
+                    categoria = producto.get("categoria")
+                    inventario = producto.get("inventario")
+                    vehiculo_compatible = producto.get("vehiculo_compatible", [])
+                    nuevo_producto = Producto(nombre, id, descripción, precio, categoria, inventario, vehiculo_compatible)
+                    self.products.append(nuevo_producto)
+                    
+                for envio in y["Envios"]:
+                    cliente = envio.get("cliente")
+                    cedula = envio.get("cedula")
+                    fecha_de_entrega = envio.get("fecha_de_entrega")
+                    orden_compra = envio.get("orden_compra")
+                    servicio_envio = envio.get("servicio_envio")
+                    costo = envio.get("costo")
+                    nuevo_envio = Envios(cliente, cedula, fecha_de_entrega, orden_compra, servicio_envio, costo)
+                    self.Envios.append(nuevo_envio)
+                    
+                for reparte in y["Repartidor"]:
+                    nombre = reparte.get("nombre")
+                    apellido = reparte.get("apellido")
+                    cedula = reparte.get("cedula")
+                    edad = reparte.get("edad")
+                    nuevo_repartidor = Repartidor(nombre, apellido, cedula, edad)
+                    self.repartidor.append(nuevo_repartidor)
+                
+                for venta in y['Ventas']:
+                    cliente = venta.get('cliente')
+                    fecha_de_la_venta = venta.get('fecha_de_la_venta')
+                    id = venta.get('id')
+                    cantidad = venta.get()
+                    metodo_de_pago = venta.get()
+                    metodo_de_envio = venta.get()
+                    nueva_venta = Venta(cliente, fecha_de_la_venta, id, cantidad, metodo_de_pago, metodo_de_envio)
+                    self.ventas.append(nueva_venta)
+                              
     def entrada_menu(self, mensaje, rango_maximo): #Menu otorgado por un try y que controla todo el codigo, aplicando polimorfismo
         try:
             num = int(input(mensaje))
@@ -101,7 +147,7 @@ class Tienda:
                                 5. Envios
                                 6. Indicadores de Gestión
                                 7. Salir de la tienda
-                                Ingrese aqui su numero: """,8)
+                                Ingrese aqui su numero -> """,8)
             if sección != None:
                 if sección == 1:
                     self.menu_productos()
@@ -127,7 +173,7 @@ class Tienda:
                             "Indicadores de Gestion": self.indicadores_gestion,
                             "Juridico" : self.juridicos
                             }
-                        file.write(json.dumps(diccionario, indent = 4, cls=EnhancedJSONEncoder)) 
+                        file.write(json.dumps(diccionario, indent = 4, cls=EnhancedJSONEncoder))
                     break
             else:
                 print("Selección Invalida")   
@@ -141,23 +187,35 @@ class Tienda:
                                 2. Busqueda de productos
                                 3. Modificar información
                                 4. Eliminar productos
-                                5. Volver al inicio: """, 6)
+                                5. Volver al inicio
+                                Ingreselo aqui -> """, 6)
             if sección != None:
                 if sección == 1:
                     #Registro para almacenar los repuestos
                     print("-----Bienvenido a la parte de incorporación de piezas-----")
                     nuevo_productos = []
+                    vehiculo_compatible = []
             
                     nombre = input("Introduzca el nombre del producto: ")
-                    descripción = input("Introduzca la descripción del producto: ")
-                    precio = float(input("Introduzca el precio del vehiculo: "))
-                    categoria = input("Ingrese la categoria del vehiculo: ")
-                    inventario = int(input("Ingrese la cantidad en el inventario: "))
-                    vehiculo_compatible = input("Ingrese el vehiculo que es compatible con el vehiculo: ")
-                    nuevo_productos = Producto(nombre, descripción, precio, categoria, inventario, vehiculo_compatible)
-                    self.products.append(nuevo_productos)
                     
-                    print(dataclasses.asdict(nuevo_productos))
+                    id = int(input("Ingrese el ID del vehiculo (Que sea un valor del 1 al 50): "))
+                    while not (id >= 1 and id <=50):
+                        id = int(input(" !!ERROR!!, vuelve a ingresar el ID del vehiculo (Que sea un valor del 1 al 50): "))
+                    descripción = input("Introduzca la descripción del producto: ")
+                    try:
+                        precio = float(input("Introduzca el precio del vehiculo(Numero decimal): "))
+                    except ValueError:
+                        precio = float(input(" !!!ERROR!!! Introduzca el precio del vehiculo: "))
+                    categoria = input("Ingrese la categoria del vehiculo: ")
+                    
+                    try:
+                        inventario = int(input("Ingrese la cantidad en el inventario: "))
+                    except ValueError:
+                        inventario = int(input("!!!ERROR!!! Ingrese la cantidad en el inventario: "))
+                    # Se crea un objeto que recopila todos los atributos de la clase otorgados por el cliente
+                    nuevo_productos = Producto(nombre, id, descripción, precio, categoria, inventario, vehiculo_compatible)
+                    self.products.append(nuevo_productos)
+            
                 elif sección == 2:
                     #En esta parte se buscan las piezas
                     print("-----Bienvenido a busqueda de piezas-----")
@@ -167,33 +225,37 @@ class Tienda:
                                                                 2. Precio 
                                                                 3. Nombre
                                                                 4. Disponibilidad de inventario
-                                                                5. Volver a inicio: """,6) #Busca el usuario catalogando segun la cedula, rif y correo electronico
-                        
+                                                                5. Volver a inicio
+                                                                Ingreselo aqui -> """,6) #Busca 
                         if sección != None: 
                             if sección == 1:
+                                categoria = input('Ingrese la categoria del vehiculo: ')
                                 for category in self.products:
                                     if category.categoria == categoria:
-                                        print(f"La categoria {categoria} pertenece a la lista")
+                                        print(f"La categoria {category.categoria} pertenece a la lista")
                                     else:
                                         print(f"No se ha encontrado la categoria: {categoria}")
                             elif sección == 2:
+                                precio = float(input('Ingrese el precio del producto: '))
                                 for prize in self.products:
                                     if prize.precio == precio:
-                                        print(f"El precio {precio} pertenece a la lista")
+                                        print(f"El precio {prize.precio} pertenece a la lista")
                                     else:
-                                        print(f"No se ha encontrado la categoria: {categoria}")
+                                        print(f"No se ha encontrado el precio: {precio}")
                             elif sección == 3:
+                                nombre = input('Ingrese el nombre del producto')
                                 for name in self.products:
                                     if name.nombre == nombre:
-                                        print(f"El nombre del {nombre} del producto pertenece a la lista")
+                                        print(f"El nombre del {name.nombre} del producto pertenece a la lista")
                                     else:
                                         print(f"No se ha encontrado el nombre de: {nombre}")
                             elif sección == 4:
+                                inventario = int(input('Ingrese la cantidad en el inventario: '))
                                 for disponibilidad in self.products:
                                     if disponibilidad.inventario == inventario:
-                                        print(f"La disponibilidad del producto en el inventario es de: {inventario}")
+                                        print(f"La disponibilidad del producto en el inventario es de: {disponibilidad.inventario}")
                                     else: 
-                                        print(f"No se ha encontrado disponiblidad del producto")
+                                        print(f"No se ha encontrado disponiblidad en el {inventario}")
                             elif sección == 5:
                                 break  
                         else:
@@ -209,39 +271,41 @@ class Tienda:
                                                                 4. Categoria
                                                                 5. Inventario
                                                                 6. Vehiculo Compatible
-                                                                7. Volver a inicio: """,8)
+                                                                7. Volver a inicio
+                                                                Ingreselo aqui -> """,8)
                         if sección != None:
                             if sección == 1:
                                 nuevo_nombre = input("Nuevo nombre de la pieza: ").capitalize()
+                                # Para modificar un producto, se crea una variable y esta se almacena en el objeto ya antes creado
                                 new_product = Producto(nuevo_nombre,descripción, precio, categoria, inventario, vehiculo_compatible)
                                 self.products.append(new_product)
                             elif sección == 2:
                                 nueva_description = input("Nueva descripción de la pieza: ").capitalize()
+                                # Para modificar un producto, se crea una variable y esta se almacena en el objeto ya antes creado
                                 new_product= Producto(nombre, nueva_description, precio, categoria, inventario, vehiculo_compatible)
                                 self.products.append(new_product)
                             elif sección == 3:
+                                nuevo_precio = float(input("Ingrese el nuevo precio del producto: "))
                                 while True:
-                                    nuevo_precio = float(input("Ingrese el nuevo precio del producto"))
                                     if nuevo_precio != float:
                                         print("Selección invalida")
                                     else:
+                                        # Para modificar un producto, se crea una variable y esta se almacena en el objeto ya antes creado
                                         new_product= Producto(nombre, descripción, nuevo_precio, categoria, inventario, vehiculo_compatible)
                                         self.products.append(new_product)
                                         break
                             elif sección == 4:
                                 nueva_categoria = input("Introduzca la modificación de la categoria: ").capitalize()
+                                # Para modificar un producto, se crea una variable y esta se almacena en el objeto ya antes creado
                                 new_product= Producto(nombre, descripción, precio, nueva_categoria, inventario, vehiculo_compatible)
                                 self.products.append(new_product)
                             elif sección == 5:
-                                while True:
-                                    nuevo_inventario = int(input("Ingrese la nueva descripción de inventario: "))
-                                    if nuevo_precio != int:
-                                        print("Selección invalida")
+                                    nuevo_inventario = (input("Ingrese la nueva descripción de inventario: "))
                                     new_product= Producto(nombre, descripción, precio, categoria, nuevo_inventario, vehiculo_compatible)
                                     self.products.append(new_product)
-                                    break
                             elif sección == 6:
                                 nuevo_vehiculo = input("Ingrese un nuevo modelo de vehiculo: ")
+                                # Para modificar un producto, se crea una variable y esta se almacena en el objeto ya antes creado
                                 new_product= Producto(nombre, descripción, precio, categoria, inventario, nuevo_vehiculo)
                             elif sección == 7:
                                 break
@@ -258,7 +322,8 @@ class Tienda:
                                                                 4. Categoria
                                                                 5. Inventario
                                                                 6. Vehiculo Compatible
-                                                                7. Volver a inicio: """,8)
+                                                                7. Volver a inicio
+                                                                Ingreselo aqui -> """,8)
                         if sección != None:
                             if sección == 1:                               
                                 for i in enumerate(self.products):
@@ -302,132 +367,198 @@ class Tienda:
                     2. Generación de facturas por cada compra
                     3. Buscador de Ventas
                     4. Volver al Inicio
-                    """,5)
+                    Ingreselo aqui -> """,5)
             if sección != None:
                 if sección == 1:
                 # Sección donde podras y registrar ventas
                     print("----- Registro de Ventas -----")
-                    nombre = input("Ingrese su nombre: ")
-                    productos_comprados = []
-                    cantidad_comprada= []
-                    while True: 
-                        producto_comprado= input("Ingrese el producto que quieres comprar: ")
-                        cantidad = int(input("Ingrese la cantidad: "))
-                        productos_comprados.append(producto_comprado)
-                        cantidad_comprada.append(cantidad)
-                        metodo_de_pago = self.entrada_menu("""Ingrese el metodo de pago: 
-                                                           1. Efectivo
-                                                           2. Transferencia
-                                                           3. Zelle
-                                                           4. Pago Movil
-                                                           5. Salir""",6)
-                        if metodo_de_pago != None:
-                            if metodo_de_pago == 1:
-                                pass
-                            elif metodo_de_pago == 2:
-                                pass
-                            elif metodo_de_pago == 3:
-                                pass
-                            elif metodo_de_pago == 4:
-                                pass
-                            elif metodo_de_pago == 5:
-                                break
-                        else: 
-                            print("Selección invalida")
+                    
+                    cliente = (input("""Eres cliente:
+                                                - Natural 
+                                                - Juridico
+                                                Ingrese su opcion: """)).lower()
+                    while cliente not in ['natural', 'juridico']:
+                        cliente = input("""Error!!!. Ingrese una opcion valida: 
+                                       - Natural
+                                       - Juridico
+                                       Ingreselo aqui -> """).lower()
+                    fecha_de_la_venta = input("Ingrese la fecha de la venta (aaaa/mm/dd): ")
+                    id= int(input("Ingrese el ID del producto: "))
+                    while not (id >= 1 and id <=50) :
+                        id = int(input(" !!ERROR!!, vuelve a ingresar el ID del vehiculo (Que sea un valor del 1 al 50): "))
+                    try:
+                        cantidad = int(input("Ingrese la cantidad que quiere comprar (Ejm: 7): "))
+                    except ValueError:
+                        cantidad = int(input(" !!ERROR!! Ingrese la cantidad que quiere comprar (Ejm: 7): "))
+                      
+                    metodo_de_pago = (input("""Ingrese el metodo de pago:
+                                                                        - Bolivares
+                                                                        - Divisas 
+                                                                        Ingrese la opcion correspondiente -> """)).lower()
+                    while metodo_de_pago not in ['bolivares', 'divisas']:  
+                        metodo_de_pago = input(""" !!!ERROR !!! Ingrese el metodo de pago:
+                                                                        - Bolivares
+                                                                        - Divisas extranjeras
+                                                                        Ingrese la opcion correspondiente -> """).lower ()  
+                    metodo_de_envio = (input("""  Introduzca el metodo de envio:
+                                                                            1.Zoom
+                                                                            2.Delivery
+                                                                            Ingrese el numero correspondiente -> """)).lower()
+                    while metodo_de_envio not in ['zoom', 'delivery']: 
+                         metodo_de_envio = (input(""" !!!ERROR !!! Ingrese el metodo de pago:
+                                                                        - Bolivares
+                                                                        - Divisas extranjeras
+                                                                        Ingrese numero correspondiente -> """)).lower()
+                    product = None
+                    for busqueda in self.products:
+                        if busqueda.id == id:
+                            print(busqueda.id)
+                            product = busqueda 
                             
-                        metodo_envio = self.entrada_menu(""" Ingrese el metdo de envio:
-                                                         1. Zoom
-                                                         2. Delivery
-                                                         3. Salir
-                                                         """, 4)
-                        if metodo_envio != None:
-                            if metodo_envio == 1:
-                                pass
-                            elif metodo_envio == 2:
-                                pass
-                            elif metodo_envio == 3:
-                                break
-                        else:
-                            print("Selección invalida") 
-                        nueva_venta = Venta(nombre, productos_comprados, cantidad_comprada, metodo_de_pago, metodo_envio)
+                    if product != None:
+                        # Se crea un objeto que recopila todos los atributos de la clase otorgados por el cliente                     
+                        nueva_venta = Venta(cliente, cantidad, fecha_de_la_venta, id, metodo_de_pago, metodo_de_envio)
                         self.ventas.append(nueva_venta)
-                                
+                    else: 
+                        print("Selección invalida")
+                        
+                    subtotal = cantidad * product.precio
+                    print(f"El subtotal es: {subtotal}")
+                    total = subtotal
+                    
+                    iva = 0.16
+                    IGTF = 0.03
+                    descuento_juridico = 0.05
+                    
+                    if cliente == 2:
+                        print(f"Descuento juridico: {total * descuento_juridico}")
+                        total -= total * descuento_juridico
+                           
+                    print(f"El iva es: {total* iva}")    
+                    total += total * iva
+                    
+                    if metodo_de_pago == 2:
+                        print(f"El IGTF es: { total * IGTF}")
+                        total += total * IGTF
+                        
+                    print(f"El total es {total}")
+                                 
                 elif sección == 2:
                 # Sección donde se generan las facturas por cada compra
                     print("----- Factura -----")
+                    print(f"1. Nombre = {cliente}")
+                    print(f"2. Fecha: {fecha_de_la_venta}")
+                    print("------------------------------------------")
+                    print(f"3.ID: {id}")
+                    print(f"4.Cantidad: {cantidad}")
+                    print("------------------------------------------")
+                    print(f"5.Metodo de pago: {metodo_de_pago}")
+                    print(f"6.Metodo de envio: {metodo_de_envio}")
+                    print("-----------------------------------------------------")
+                    print(f"Subtotal: {subtotal}")
+                    print(f"Iva: {iva}")
+                    print("-----------------------------------------------------")
+                    print(f"IGTF : {IGTF}")
+                    print(f"Descuento Juridico: {descuento_juridico}")
+                    print("-----------------------------------------------------")
+                    print(f"Total: {total}")
+                    
                 elif sección == 3:
                 # Sección a la que podras buscar a los clientes
-                    print("----- Bienvenido al registro de clientes ----- ")
+                    print("----- Bienvenido a la busqueda de ventas ----- ")
                     while True:
-                        selección = self.entrada_menu("""Indique un numero para buscar el cliente: 
+                        selección = self.entrada_menu("""Indique un numero para buscar la venta: 
                                                                 1. Cliente 
                                                                 2. Fecha de la venta
-                                                                3. Volver a inicio """,4)
-                        if sección != None:
+                                                                3. Volver a inicio
+                                                                Ingreselo aqui -> """,4)
+                        if sección != None: 
                             if selección == 1: 
-                                cliente = input("Indique el nombre del cliente: ")
-                                for client in self.clients:
-                                    if client.cliente == cliente:
-                                        pass
+                                cliente = (input(f"""Que tipo de cliente es: 
+                                                    1. Natural
+                                                    2. Juridico
+                                                    Ingrese su opcion aqui -> """)).lower()                               
+                                for usuario in self.ventas:
+                                    if usuario.cliente == cliente:
+                                        print(f"El cliente {usuario.cliente} se ha encontrado")
+                                        break
+                                    else:
+                                        print(f"No se ha encontrado el cliente: {cliente}")
                             elif selección == 2:
-                                fecha = input("Seleccione la fecha de venta del producto: ")
-                                for date in self.menu_ventas:
-                                    pass      
+                                fecha = input("Seleccione la fecha de venta del producto (aaaa/mm/dd): ")
+                                for date in self.ventas:
+                                    if date.fecha == fecha_de_la_venta:
+                                        print(f"La fecha de la venta fue el {date.fecha}")   
+                                        break
+                                    else: 
+                                        print(f"No se ha encontrado la fecha: {fecha_de_la_venta}")
                             elif selección == 3:
                                 break
                 elif sección == 4:
                     break
             else:
-                print("Selección Invalida")
-                
+                print("Selección Invalida")   
     def menu_clientes(self):
          #Constructor de la función menu de clientes
         while True:
-            print("Bienvenido a la función Clientes!!")
-            sección = self.entrada_menu("""¿Que desea realizar?: 
+            print("Bienvenido a la función Clientes!!") #Se pregunta al usuario que opcion quiere visualizar
+            sección = self.entrada_menu("""¿Que desea realizar?:  
                                 1. Registro de cliente
                                 2. Modificar información del cliente 
                                 3. Eliminar cliente
                                 4. Busqueda de cliente
                                 5. Volver al inicio
-                                """, 6)
+                                Ingrese el numero aqui -> """, 6)
             if sección != None:
                 if sección == 1:
             # Sección donde podras registrar a los clientes
-                    print("----- Bienvenido al registro de clientes -----")
+                    print("----- Bienvenido al registro de clientes -----") 
                     while True:
                         sección= self.entrada_menu("""Indique un numero: 
                                                         1. Cliente Natural
                                                         2. Cliente Juridico
-                                                        3. Salir: """,4)
+                                                        3. Salir
+                                                        Ingreselo aqui ->""",4) # Se le da la opción al cliente al registrar si es natural o juridico
                         if sección != None:   
                             if sección == 1:
                                 nombre = input("Cual es tu nombre: ")
                                 apellido = input("Cual es tu apellido: ")
-                                cedula = int(input("Indique su cedula: "))
+                                try: 
+                                    cedula = int(input("Ingrese la cedula (No use puntos ni letras): "))
+                                except ValueError:
+                                    cedula = int(input("Error!!, Introduzca un número entero (ejm: 30291432):"))
                                 correo = input("Cual es tu correo?: ")
                                 telefono = input("Indique su numero telefonico: ")
-                                new_client = Cliente(nombre, apellido, cedula, correo, telefono)
+                                # Se crea un objeto que recopila todos los atributos de la clase otorgados por el cliente
+                                new_client = Cliente(nombre, apellido, cedula, correo, telefono) 
                                 
-                                encontrado = False
+                                encontrado = False #Se verifica si el cliente se registra con la misma cedula
                                 for client in self.clients:
                                     if client.cedula == cedula:
                                         encontrado = True
                                 if encontrado:
                                     print("Esa cedula ya existe")
                                 else:
-                                    self.clients.append(new_client)
+                                    self.clients.append(new_client) #Filtro para saber si el rif que se va a agregar ya existe
                                                                       
                             elif sección == 2:
                                 nombre_juridico = input("Ingrese el nombre juridico: ")
-                                rif = int(input("Ingrese el Rif de la empresa: "))
+                                try:
+                                    rif = int(input("Ingrese el Rif de la empresa: "))
+                                except ValueError:
+                                    rif = int(input(" !ERROR! Ingrese el Rif de la empresa: "))
                                 telefono = (input("Ingrese el numero de Telefono de la empresa: "))
                                 correo_juridico = input("Ingrese el Correo de la empresa: ")
-                                
-                          
                                 new_company = Juridico(nombre_juridico, rif, telefono, correo_juridico)
-                                self.juridicos.append(new_company)
-                                      
+                                
+                                encontrado_rif = False #Filtro para saber si el rif que se va a agregar ya existe
+                                for juridico in self.juridicos:
+                                    if juridico.rif == rif:
+                                        encontrado_rif = True
+                                if encontrado_rif:
+                                    print("El rif ya existe")
+                                else:
+                                    self.juridicos.append(new_company)
                             elif sección == 3:
                                 break
                         else:
@@ -436,14 +567,16 @@ class Tienda:
                 # Sección donde podras registar la información del cliente
                     print("----- Bienvenido a la Modificación de Información del cliente -----")
                     while True: 
+                        #Primero se consulta si el cliente es Natural o Juridico
                         sección = self.entrada_menu("""Quisiera modificar un aspecto de: 
                                                         1. Cliente Natural
                                                         2. Cliente Juridico
                                                         3. Volver al inicio
-                                                        Seleccione: """,4)
+                                                        Ingreselo aquí -> """,4) 
                         if sección != None:
                             if sección == 1: 
-                                buscar = int(input("Ingrese su cedula: "))
+                                buscar = int(input("Ingrese su cedula: ")) 
+                                #Se le pide al usuario la cedula para que pueda modificar sus datos
                                 if buscar != int and buscar != cedula:
                                     print("Selección invalida")
                                 else:
@@ -454,24 +587,29 @@ class Tienda:
                                                             4. Correo
                                                             5. Telefono
                                                             6. Volver a inicio
-                                                            Seleccione: """,7)
+                                                            Ingreselo -> """,7)
                                     if sección != None:         
                                         if sección == 1:
                                             nuevo_nombre = input("Selecciona su nuevo nombre: ")
+                                            # Para modificar un producto, se crea una variable y esta se almacena en el objeto ya antes creado
                                             new_client = Cliente(nuevo_nombre, apellido, cedula, correo, telefono)
                                         elif sección == 2: 
                                             nuevo_apellido = input("Seleccione su nuevo apellido: ")
+                                            # Para modificar un producto, se crea una variable y esta se almacena en el objeto ya antes creado
                                             new_client = Cliente(nombre, nuevo_apellido, cedula, correo, telefono)
                                         elif sección == 3:
                                             nueva_cedula = int(input("Introduzca su nuevo numero de cedula: "))
                                             if nueva_cedula != int:
                                                 print("Selección invalida")
+                                            # Para modificar un producto, se crea una variable y esta se almacena en el objeto ya antes creado
                                             new_client = Cliente(nombre, apellido, cedula, correo, telefono)
                                         elif sección == 4:
                                             nuevo_correo = input("Introduzca su nuevo correo electronico: ")
+                                            # Para modificar un producto, se crea una variable y esta se almacena en el objeto ya antes creado
                                             new_client = Cliente(nombre, apellido, cedula, nuevo_correo, telefono)
                                         elif sección == 5:
                                             nuevo_telefono = int(input("Seleccione un nuevo numero de telefono: "))
+                                            # Para modificar un producto, se crea una variable y esta se almacena en el objeto ya antes creado
                                             new_client = Cliente(nombre, apellido, cedula, correo, nuevo_telefono)
                                         elif sección == 6:
                                             break  
@@ -486,7 +624,7 @@ class Tienda:
                                                                 3. Telefono
                                                                 4. Correo
                                                                 5. Volver a inicio
-                                                                Seleccione: """,6)
+                                                                Ingreselo -> """,6)
                                     if sección != None:
                                             if sección == 1:
                                                 nuevo_nombre_juridico = input("Introduzca el nuevo nombre de la empresa: ")
@@ -501,12 +639,11 @@ class Tienda:
                                                 nuevo_correo = input("Introduzca el nuevo correo de la empresa: ")
                                                 new_company = Juridico(nombre_juridico, rif, telefono, nuevo_correo)
                                             elif sección == 5:
-                                                break
-                                            
+                                                break           
                             elif sección == 3:
                                 break
                         else:
-                                print("Seleccion invalida")        
+                            print("Seleccion invalida")        
                 elif sección == 3:
                 # Sección donde puedes eliminar clientes, eliminando a partir de su cedula
                     print("----- Bienvenido a la eliminación del registro de cliente -----")
@@ -514,17 +651,18 @@ class Tienda:
                                                         1. Cedula
                                                         2. Rif
                                                         3. Volver a Inicio
-                                                        Seleccione: """,4)
+                                                        Ingreselo -> """,4)
                     if sección != None:
                         if sección == 1:
-                            eliminar = int(input("Escriba su cedula: "))
+                            eliminar = int(input("Escriba su cedula (No use puntos ni letras): "))
+                            #Recorremos i y cliente en self.clients, para eliminar la variable ya antes asignadas
                             for i, cliente in enumerate(self.clients):
                                 if cliente.cedula == eliminar:
                                     self.clients.pop(i)
                                     print("Se ha eliminado el usuario de manera exitosa")
                         
                         elif sección == 2:
-                            eliminar = int(input("Escriba el rif de la empresa"))
+                            eliminar = int(input("Escriba el rif de la empresa: "))
                             for j, empresa in enumerate(self.juridicos):
                                 if empresa.rif == eliminar:
                                     self.juridicos.pop(j)
@@ -542,10 +680,11 @@ class Tienda:
                                                                 2. Rif
                                                                 3. Correo Electronico (Persona Natural)
                                                                 4. Correo Electronico (Persona Juridica)
-                                                                5. Volver a inicio: """,6) #Busca el usuario catalogando segun la cedula, rif y correo electronico
+                                                                5. Volver a inicio
+                                                                Ingeselo aquí -> """,6) #Busca el usuario catalogando segun la cedula, rif y correo electronico
                         if sección != None:
                             if sección == 1: 
-                                cedula = int(input("Indique su cedula: "))
+                                cedula = int(input("Indique su cedula (No use puntos ni letras): "))
                                 for client in self.clients:
                                     if client.cedula == cedula:
                                         print(f"La cedula {cedula} pertenece a {client.nombre} {client.apellido}")
@@ -593,27 +732,51 @@ class Tienda:
                             1. Registro de pagos
                             2. Busqueda de pagos
                             3. Volver al inicio
-                            """, 4)
+                            Ingreselo aqui -> """, 4)
             if sección != None:
                 if sección == 1:
             #Sección en donde registras los pagos hechos.
                     print("----- Bienvenido al lugar donde puedes registrar los pagos -----")
-                    
                     cliente = input("Ingrese su nombre: ")
-                    monto_pago = float(input("Ingrese el monto del pago: "))
-                    moneda_pago = input("Ingrese la moneda de pago (Bolivares, Euros o dolares): ").lower()
+                    try: 
+                        cedula = int(input("Ingrese la cedula (No use puntos ni letras): ")) 
+                    except ValueError:
+                        cedula = int(input("Error!!, Introduzca un número entero (ejm: 30291432):"))
+                    try:
+                        monto_pago = float(input("Ingrese el monto del pago (No use letras): "))
+                    except ValueError:
+                        monto_pago = float(input("Error, Ingrese un valor con numero decimal (ejm: 4.32): "))
+                    moneda = input("""Ingrese la moneda de pago:
+                                   - Bolivares
+                                   - Euros
+                                   - Dolares
+                                   Ingreselo aqui -> """).lower()
+                    while moneda not in ['bolivares', 'euros', 'dolares']:
+                        moneda = input("""Error!!!. Ingrese una moneda de la lista: 
+                                       - Bolivares
+                                       - Euros
+                                       - Dolares
+                                       Ingreselo aqui -> """).lower()
                     tipo_de_pago = input("""Ingrese el medio de pago: 
                                         -Punto de Venta 
                                         -Pago Movil
                                         -Transferencia
                                         -Zelle
                                         -Efectivo.
-                                        Ingresa aqui -> """)
+                                        Ingreselo aqui -> """).lower()
+                    while tipo_de_pago not in ['punto de venta', 'pago movil', 'transferencia', 'zelle', 'efectivo']:
+                        tipo_de_pago = input("""Error. Ingrese una opción entre:
+                                             -Punto de venta
+                                             -Pago movil,
+                                             -Transferenci
+                                             -Zelle
+                                             -Efectivo
+                                            Ingreselo aqui -> """).lower()
                     fecha = input("Ingrese la fecha de pago (aaaa-mm-dd): ") #En lo que en parentesis significa: 
                                                                                      # a = Años
                                                                                      # m = meses
                                                                                      # d = dias
-                    new_payment = Pagos(cliente, monto_pago, moneda_pago, tipo_de_pago, fecha)
+                    new_payment = Pagos(cliente, cedula, monto_pago, moneda, tipo_de_pago, fecha)
                     self.payments.append(new_payment)
               
                 elif sección == 2:
@@ -625,40 +788,41 @@ class Tienda:
                                                                 2. Fecha
                                                                 3. Tipo de Pago
                                                                 4. Moneda de Pago
-                                                                5. Volver a inicio: """,6)
+                                                                5. Volver a inicio
+                                                                Ingreselo aqui -> """,6)
                         if sección != None:
                             if sección == 1: 
-                                cliente = input("Ingrese su nombre: ")
+                                cliente = input("Ingrese su nombre: ") 
                                 for client in self.payments:
                                     if client.cliente == cliente:
-                                        print(f"Se ha encontrado el cliente de nombre {self.cliente}")
+                                        print(f"Se ha encontrado el cliente de nombre: {client.cliente}")
                                         break
                                     else:
-                                        print(f"No se ha encontrado el cliente de nombre {self.cliente} ")
+                                        print(f"No se ha encontrado el cliente de nombre {cliente} ")
                             elif sección == 2:
                                 fecha = input("Ingrese la fecha de la compra(aaaa-mm-dd): ")
                                 for date in self.payments:
                                     if date.fecha == fecha:
-                                        print(f"El producto se compro el {self.fecha}")
+                                        print(f"El producto se compro el {date.fecha}")
                                         break
                                     else:
-                                        print(f"El producto no se compro el {self.fecha}")   
+                                        print(f"El producto no se compro el {fecha}")   
                             elif sección == 3:
                                 tipo_de_pago = input("Ingrese el tipo de pago: ")
                                 for pago in self.payments:
                                     if pago.tipo_de_pago == tipo_de_pago:
-                                        print(f"El pago fue por {self.tipo_de_pago}")
+                                        print(f"El pago fue por {pago.tipo_de_pago}")
                                         break
                                     else:
-                                        print(f"No se ha encontrado ningun pago: {self.tipo_de_pago}")
+                                        print(f"No se ha encontrado ningun pago: {tipo_de_pago}")
                             elif sección == 4:
-                                moneda_pago = input("Ingrese la moneda de pago: ")
-                                for moneda in self.payments:
-                                    if moneda.moneda_pago == moneda_pago:
-                                        print(f"El pago se hizo con {self.moneda_pago}")
+                                moneda = input("Ingrese la moneda de pago: ")
+                                for coin in self.payments:
+                                    if coin.moneda == moneda:
+                                        print(f"El pago se hizo con {coin.moneda}")
                                         break
                                     else:
-                                        print(f"No se encontro ningun pago en {self.moneda_pago}")
+                                        print(f"No se encontro ningun pago en {moneda}")
                             elif sección == 5:
                                 break
                         else:
@@ -674,53 +838,74 @@ class Tienda:
             sección = self.entrada_menu("""¿A que desea acceder?: 
                             1. Registro de envios
                             2. Busqueda de envio
-                            3. Volver a inicio""",4)
+                            3. Volver a inicio
+                            Ingreselo aqui -> """,4)
             if sección != None:
                 if sección == 1:
-                     # Lugar donde podras consultar los registros de envios
+                     # Lugar donde podras registrar los registros de envios
                     print("----- Bienvenido al registro de envios -----")
                     cliente = input("Ingrese su nombre: ")
+                    try: 
+                        cedula = int(input("Ingrese la cedula (No use puntos ni letras): ")) 
+                    except ValueError:
+                        cedula = int(input("Error!!, Introduzca un número entero (ejm: 30291):"))
                     fecha_de_entrega = input("Ingrese la fecha de entrega(aaaa/mm/dd): ")
-                    orden_compra = int(input("Cual es el ID orden de compra: "))
+                    try:
+                        orden_compra = int(input("Cual es el ID orden de compra (Ejm: 5): "))
+                    except ValueError:
+                        orden_compra = int(input(" !!!ERROR!!!, Seleccione cual es el ID orden de compra (Ejm: 5): "))
                     servicio_envio = input("Cual es el servicio de envio (Delivery o Zoom): ").lower()
-                    costo = float(input("Introduzca el costo del envio: "))
-                    new_shipment = Envio(orden_compra, servicio_envio, costo)
-                    self.Envios.append(new_shipment)                
+                    while servicio_envio not in ['delivery', 'zoom']:
+                        servicio_envio = input("Error. Ingrese una opción entre Delivery o Zoom: ").lower()
+                    try:
+                        costo = float(input("Introduzca el costo del envio (Use un punto para usar los decimales): "))
+                    except ValueError:
+                        costo = float(input("Introduzca el costo del envio (Use un punto para usar los decimales): "))
+                    new_shipment = Envios(cliente, cedula, fecha_de_entrega, orden_compra, servicio_envio, costo)
+                    # Se crea un objeto que recopila todos los atributos de la clase otorgados por el cliente
+                    self.Envios.append(new_shipment)
                     
-                    if servicio_envio == "delivery" or "entrega": #Si el usuario indica que el servicio de envio es en delivery, al usuario se le otorgan los datos para registrar al delivery 
-                        nombre = input("Diga el nombre del repartidor: ")
-                        apellido = input("Diga el apellido: ")
-                        cedula = input("Diga su cedula: ")
-                        edad = int(input("Ingrese su apellido: "))
-                        new_repartidor = Repartidor(nombre, apellido, cedula, edad)
-                        self.repartidor.append(new_repartidor)
-                    else: 
-                        print("Selección invalida")
-                                        
+                    if servicio_envio == "delivery": #Si el usuario dice que el servicio de envio es un delivery    
+                        print("-----Bienvenido al registro del repartidor-----")
+                        nombre = input("Ingresa el nombre del repartidor: ")
+                        apellido = input("Ingresa el apellido del repartidor: ")
+                        try:
+                            cedula = int(input("Ingresa la cedula del repartidor: "))
+                        except ValueError:
+                            cedula = int(input("Error!!, Introduzca un número entero (ejm: 30291):"))
+                        edad = int(input("Ingresa la edad del repartidor: "))
+                        try:
+                            edad = int(input("Ingresa la cedula del repartidor: "))
+                        except ValueError:
+                            edad = int(input("!!Error!!, Ingrese una edad valida (ejm: 20): "))
+                        new_service = Repartidor(nombre, apellido, cedula, edad)
+                        self.repartidor.append(new_service)
+                        
                 elif sección == 2:
                      # Sitio donde podras buscar los envios
                     print("----- Bienvenido a la busqueda de envios -----")
                     sección = self.entrada_menu("""Ingrese un numero para buscar el envio: 
                                                   1. Cliente
                                                   2. Fecha
-                                                  3. Salir""",4)
-                    if sección == None:
+                                                  3. Salir
+                                                  Ingreselo aqui -> """,4)
+                    if sección != None:
                         if sección == 1:
-                            cliente = input("Ingrese su nombre: ")
-                            for client in self.Envios:
-                                    if client.cliente == cliente:
-                                        print(f"Se ha encontrado el cliente de nombre {self.cliente}")
-                                        break
-                                    else:
-                                        print(f"No se ha encontrado el cliente de nombre {self.cliente} ")
-                        elif sección == 2: 
-                            fecha_de_entrega = input("Ingrese la fecha de entrega: ")
-                            for fecha in self.Envios:
-                                if fecha.fecha_entrega == fecha_de_entrega:
-                                    print(f"La fecha del envio: {self.fecha_entrega}")
+                             nombre = (input("Ingrese su nombre: "))
+                             # Se recorre la lista para encontrar un atributo de esa.
+                             for name in self.Envios:
+                                if name.cliente == nombre:
+                                    print(f"El envio se hizo a nombre de {name.cliente}")
                                     break
                                 else:
-                                    print(f"No se ha encontrado el cliente de nombre {self.fecha_entrega}")  
+                                    print(f"No se encontro ningun envio a nombre de {nombre}")
+                        elif sección == 2: 
+                            fecha_de_entrega = int(input("Ingrese su cedula: "))
+                            for date in self.Envios:
+                                if date.fecha_de_entrega == fecha_de_entrega:
+                                    print(f"El envio se hizo en la fecha: {date.fecha_de_entrega}")
+                                else:
+                                    print(f"No se encontro ningun envio en esa fecha {fecha_de_entrega}")
                         elif sección == 3:
                             break
                     else:
@@ -740,7 +925,7 @@ class Tienda:
                             3. Informes de envios
                             4. Graficas con las respectivas estadisticas
                             5. Volver a inicio
-                            """,6)
+                            Ingreselo aqui -> """,6)
             if sección == None:
                 if sección == 1:
             #Lugar donde podras consultar los registros de ventas pasados
@@ -757,4 +942,4 @@ class Tienda:
                 elif sección == 5:
                     break
             else:
-                print("Selección Invalida")
+                print("Selección Invalida")        
