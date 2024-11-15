@@ -1,32 +1,34 @@
 #Constructor, metodos y atributo de la clase Ventas
 from dataclasses import dataclass
+from datetime import date
 @dataclass
 class Venta:
     #Constructor de la clase Venta
     
-    compra: str
-    fecha: str
-    productos: str
+    cliente: str
+    fecha_de_la_venta: date
+    id = int
     cantidad: int
-    pago: float
+    metodo_de_pago: float
     envio: str
     
-    def __init__(self, compra, fecha, productos, cantidad, pago, envio, ):
-        self.compra = compra
-        self.fecha = fecha
-        self.productos = productos
+    def __init__(self, cliente, fecha_de_la_venta, id, cantidad, metodo_de_pago, metodo_de_envio ):
+        self.cliente = cliente
+        self.fecha_de_la_venta = fecha_de_la_venta
+        self.id = id
         self.cantidad = cantidad
-        self.pago = pago
-        self.envio = envio
+        self.metodo_de_pago = metodo_de_pago
+        self.metodo_de_envio = metodo_de_envio
         
     def show(self):
         print(f"""
-              Compra = {self.compra}
-              Fecha = {self.fecha}
-              Productos = {self.productos}
+              Cliente = {self.cliente}
+              Fecha de la venta= {self.fecha_de_la_venta}
+              ID = {self.id}
               Cantidad = {self.cantidad}
-              Pago = {self.pago}
-              Envio = {self.envio}
+              Metodo de Pago = {self.metodo_de_pago}
+              Metodo de Envio = {self.metodo_de_envio}
               """)
 
+        
         
