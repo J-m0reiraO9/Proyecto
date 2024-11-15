@@ -6,29 +6,33 @@ class Envios:
     
     cliente: str
     cedula: int
-    orden: str
+    producto: str
+    fecha_de_entrega: str
+    orden: int
     envio: str
-    datos: str
     costo: float
     
-    def __init__(self, cliente, cedula, orden_compra, servicio_envio, datos_repartidor, costo):
+    def __init__(self, cliente, producto, cedula, fecha_de_entrega, orden_compra, servicio_envio, costo):
         self.cliente = cliente
         self.cedula = cedula
+        self.producto = producto
+        self.fecha_de_entrega = fecha_de_entrega
         self.orden = orden_compra
         self.envio = servicio_envio
-        self.datos = datos_repartidor
         self.costo = costo
+        self.entregado = False
         
     def show(self):
         print(f"""
               Cliente = {self.cliente}
               Cedula = {self.cedula}
+              Producto = {self.producto}
+              Fecha de Entrega = {self.fecha_de_entrega}
               Orden de Compra = {self.orden}
               Servicio de envio = {self.envio}
-              Datos del repartidor = {self.datos}
               Costo del Servicio = {self.costo}
               """)
-        
+            
 @dataclass
 class Repartidor:
     nombre: str
@@ -48,6 +52,9 @@ class Repartidor:
               Apellido = {self.apellido}
               Cedula = {self.apellido}
               Edad = {self.edad}""")
+    
+    
+        
     
     
 
