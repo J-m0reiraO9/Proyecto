@@ -10,16 +10,14 @@ class Producto:
     precio: float
     categoria: str
     inventario: str
-    modelo_vehiculo: list[str]
     
-    def __init__(self, nombre, id, descripción, precio, categoria, inventario, modelo_vehiculo):
+    def __init__(self, nombre, id, descripción, precio, categoria, inventario):
         self.nombre = nombre
         self.id = id
         self.descripción = descripción
         self.precio = precio
         self.categoria = categoria
         self.inventario = inventario
-        self.modelo_vehiculo = modelo_vehiculo
     
     def show_attr(self):
         #Muestra en la consola los datos del cliente
@@ -30,6 +28,4 @@ class Producto:
               Precio = {self.precio}
               Categoria = {self.categoria}
               Inventario = {self.inventario}
-              Modelo de Vehiculo = {self.modelo_vehiculo}
               """)
-    
